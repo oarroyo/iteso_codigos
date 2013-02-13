@@ -1,5 +1,9 @@
-/*
- * Ejemplo básico de un servidor de Sockets.
+/**
+ * @file simple_hello.c
+ * @brief Ejemplo básico de un cliente y servidor de Sockets.
+ *
+ * @author Alvaro Parres
+ * @date Feb/2013
  */
 
 #include <stdio.h>
@@ -25,7 +29,7 @@ int main(int args, char *argv[]) {
 	struct sockaddr_in cliente = { 0 };
 	socklen_t clienteLen;
 	
-	char mensaje[] = "\nHOLA!\n\n";
+	char mensaje[] = "HOLA!";
 	char mensajeIN[255];
 	
 	if(args < 3) {
@@ -92,13 +96,7 @@ int main(int args, char *argv[]) {
 				fprintf(stderr,"Error we only write %i bytes of %li bytes\n",status, sizeof(mensaje));
 			}
 
-			do {
-				status=read(clientSocket, mensajeIN, sizeof(mensajeIN));
-				printf("Leimos del Cliente: %s - reenviamos al cliente\n",mensajeIN);
-				status=write(clientSocket, mensajeIN, strlen(mensajeIN));
-			} while(strcmp(mensajeIN,"ADIOS")!=0);
-				
-			printf("Cerramos el Socket\n");
+			printf("Cerramos el Socket del Cliente\n");
 			close(clientSocket);
 		}
 	} else { // INICIA CLIENTE
