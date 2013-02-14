@@ -3,7 +3,8 @@
 # Instrucciones para compilar
 
 NAME = tcp_ping
-OBJS = main.o tcp_ping.o
+OBJS = main.o tcp_ping.o server.o client.o netlib/tcp.o ping.o
+
 CC = g++
 CFLAGS = -Wall -O2
 
