@@ -51,6 +51,35 @@ int newTCPServerSocket4(const char *ip, const u_short port, const int q_size) {
 	return socketFD;
 }
 
+int newTCPServerSocket6(const char *ip, const u_short port, const int q_size) {
+	int socketFD;
+	int status;
+	int localerror;
+	struct sockaddr_in addr;
+
+	if(!buildAddr4(&addr,ip,port)) return -1;
+	
+	if(!(socketFD = getNewTCPSocket(PF_INET))==-1) return -1;
+	
+	status = bind(socketFD, (struct sockaddr*)&addr, sizeof(addr));
+	if(status != 0) {
+		localerror = errno;
+		fprintf(stderr,"Error: Can't bind port %s:%i (%s)\n",ip,port,strerror(localerror));
+		return -1;
+	}
+	
+	status = listen(socketFD,q_size);
+	if(status != 0) {
+		localerror = errno;
+		fprintf(stderr,"Error: Can't change socket mode to listen (%s)\n",strerror(localerror));
+		return -1;
+	}
+	
+	debug(4,"Socket on %s:%u created",ip,port);
+	
+	return socketFD;
+}
+
 int buildAddr4(struct sockaddr_in *addr, const char *ip, const u_short port) {
 	
 	int status;

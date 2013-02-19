@@ -11,9 +11,11 @@
 #include "netlib/tcp.h"
 #include "utils/debug.h"
 #include "ping.h"
+#include "server.h"
 
 
-int start_server(const char iface[], const u_short port, const u_short maxClients) {
+
+int start_server(const ip_version_enum ip_version, const char iface[], const u_short port, const u_short maxClients) {
 
 	int serverSocket;
 	int clientSocket;

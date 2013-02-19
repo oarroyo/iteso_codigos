@@ -19,6 +19,7 @@
 #include "utils/debug.h"
 #include "server.h"
 #include "client.h"
+#include "defines.h"
 
 //Variables Globales
 u_short port = CONFIG_DEFAULT_PORT;
@@ -35,6 +36,9 @@ enum mode_enum {
 
 mode_enum mode = NOT_DEFINE;
 
+ip_version_enum ip_version = IPv4;
+
+
 //Prototipos Locales
 int processArguments(int argc, char* argv[]);
 void printHelp(const char *cmd, const short error, const char *msg=NULL);
@@ -46,7 +50,7 @@ int start(int argc, char *argv[]) {
 	if(!processArguments(argc, argv)) return -1;
 	
 	if(mode == SERVER) {
-		start_server(CONFIG_LISENT_IFACE, port, CONFIG_MAX_CLIENT);
+		start_server(ip_version,CONFIG_LISENT_IFACE, port, CONFIG_MAX_CLIENT);
 	} else if(mode == CLIENT) {
 		start_client(ip_dst,port,msg_count,msg_size);
 	}
@@ -104,6 +108,8 @@ int processArguments(int argc, char* argv[]) {
 			stpncpy(ip_dst,argv[++i],18);
 		} else if(strstr(argv[i],"-v")!=NULL) {
 			debugLevel = strlen(argv[i])-1;
+		} else if(strcmp(argv[i],"-6")==0) {
+			ip_version = IPv6;
 		} else {
 			printHelp(argv[0],true,"Unkown option\n");
 			return false;
@@ -147,5 +153,6 @@ void printHelp(const char *cmd, const short error, const char *msg) {
 	printf("\t-n\t Set the number of ping msg to send (Default %u)\n",CONFIG_DEFAULT_COUNT);
 	printf("\t-s size\t Set the size on KBs of the msg (Default %u)\n",CONFIG_DEFAULT_MSGSIZE);
 	printf("\t-d IP_ADDR\t Set the IP Dst\n");	
+	printf("\t-6\t Works with IPv6 Address\n");		
 	printf("\n");
 } 
