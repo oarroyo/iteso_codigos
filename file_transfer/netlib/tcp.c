@@ -57,7 +57,7 @@ int buildAddr4(struct sockaddr_in *addr, const char *ip, const u_short port) {
 	int localerror;
 
 	bzero(addr, sizeof(addr));
-	
+	addr->sin_family = AF_INET;
 	status = inet_pton(AF_INET,ip,&(addr->sin_addr.s_addr));
 	if(status == 0) {
 		fprintf(stderr,"Invalid IPv4 Address\n");
