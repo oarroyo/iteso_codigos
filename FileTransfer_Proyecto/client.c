@@ -7,7 +7,7 @@
 */
 
 #include <sys/types.h>
-#include <strings.h>
+#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>

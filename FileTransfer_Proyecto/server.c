@@ -7,7 +7,7 @@
 */
 
 #include <sys/types.h>
-#include <strings.h>
+#include <string.h>
 #include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -163,6 +163,7 @@ void doGet(const int clientSocket, const char  baseDir[], const char *fileName) 
 			writeBytes += write(clientSocket,readBuffer+writeBytes,readBytes-writeBytes);
 		}
 	}
+	
 	free(readBuffer);
 	free(writeBuffer);
 	close(fd);
