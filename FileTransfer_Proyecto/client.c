@@ -30,13 +30,6 @@ int start_client(const u_short port, const char ip[], const char remoteFilename[
 
 	int socket;
 	
-	char clientIP[18];
-	u_int clientPort;
-	
-	int forkID;
-	
-	int localError;
-	
 	socket = newTCPClientSocket4(ip, port);
 	
 	if(socket == -1) {
@@ -100,7 +93,6 @@ void doGet(int socket, const char *localFilename, unsigned long size) {
 	char *readBuffer;
 	u_int readBytes = 0;
 	u_long totalReadBytes = 0;
-	char *fullPath;
 	int fd;
 	int localError;
 	u_long start;
