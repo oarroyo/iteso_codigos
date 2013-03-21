@@ -56,8 +56,9 @@ void start_protocol(const int socket,const char *remoteFilename,const char *loca
 	sprintf(writeBuffer,"GET %s\r\n\r\n",remoteFilename);
 	sendLine(socket,writeBuffer);
 	
+	//LEEMOS LA RESPUESTA AL GET
 	cmdString = (char *) malloc(254);
-	while((readBytes = read(socket,readBuffer,10240))>0) {
+	while((readBytes = read(socket,readBuffer,1))>0) {
 		cmdString = (char *) realloc(cmdString,strlen(cmdString)+readBytes+1);
 		strncat(cmdString,readBuffer,readBytes);
 		ptr = cmdString+(strlen(cmdString)-4);
@@ -120,7 +121,7 @@ void doGet(int socket, const char *localFilename, unsigned long size) {
 		totalReadBytes += readBytes;
 		end = currentTimeMillis();
 		if(end>start)
-			debug(1,"Get %lu/%lu ( %0.0f%% ) speed %lukbps",totalReadBytes,size,(((float)totalReadBytes/(float)size)*100),(totalReadBytes/(end-start)*1000/1024));		
+			debug(4,"Get %lu/%lu ( %0.0f%% ) speed %lukbps",totalReadBytes,size,(((float)totalReadBytes/(float)size)*100),(totalReadBytes/(end-start)*1000/1024));		
 	}	
 	
 	free(readBuffer);
