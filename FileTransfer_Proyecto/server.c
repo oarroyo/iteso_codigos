@@ -88,7 +88,7 @@ void start_protocol(const int clientSocket,const char baseDir[]) {
 
 	while(true) {
 		cmdString = (char *) calloc(255,1);
-		while((readBytes = read(clientSocket,readBuffer,1024))>0) {
+		while((readBytes = read(clientSocket,readBuffer,1))>0) {
 			cmdString = (char *) realloc(cmdString,strlen(cmdString)+readBytes+1);
 			strncat(cmdString,readBuffer,readBytes);
 			ptr = cmdString+(strlen(cmdString)-4);
