@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <sys/stat.h>
+ #include <dirent.h>
 
 #include "netlib/tcp.h"
 #include "utils/debug.h"
@@ -20,6 +21,7 @@
 //Prototipos Locales
 void start_protocol(const int clientSocket,const char baseDir[]);
 void doGet(const int clientSocket, const char  baseDir[], const char *fileName);
+void doList(const int clientSocket, const char baseDir[]);
 int sendLine(const int clientSocket, const char* writeBuffer);
 
 //Funciones
@@ -109,7 +111,7 @@ void start_protocol(const int clientSocket,const char baseDir[]) {
 				doGet(clientSocket,baseDir, token);
 			}
 		} else if(strcmp(token,"LIST")==0) {
-			//DoList();
+			doList(clientSocket,baseDir);
 		} else if(strcmp(token,"QUIT")==0) {
 					break;
 		} else {
@@ -121,7 +123,27 @@ void start_protocol(const int clientSocket,const char baseDir[]) {
 
 }
 
+void doList(const int clientSocket, const char baseDir[]) {
+	
+	DIR *dir;
+	struct dirent *ent;
+	char writeBuffer[1024];
 
+	if ((dir = opendir (baseDir)) != NULL) {
+		while ((ent = readdir (dir)) != NULL) {
+			if(strcmp(ent->d_name,".")==0) continue;
+			if(strcmp(ent->d_name,"..")==0) continue;			
+			sprintf(writeBuffer,"%s\r\n",ent->d_name);
+			sendLine(clientSocket,writeBuffer);
+		}
+		closedir (dir);
+		sendLine(clientSocket,"\r\n");
+	} else {
+		sendLine(clientSocket, "INTENRAL ERROR ( Can't open directory)\r\n\r\n");
+	}
+		
+}
+ 
 void doGet(const int clientSocket, const char  baseDir[], const char *fileName) {
 	
 	char *writeBuffer = (char *) malloc(256);

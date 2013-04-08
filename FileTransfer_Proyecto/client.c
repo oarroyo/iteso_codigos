@@ -43,6 +43,48 @@ int start_client(const u_short port, const char ip[], const char remoteFilename[
 			
 }
 
+int get_list(const u_short port, const char ip[]) {
+
+	int socket;
+	char *list;
+	char *readBuffer = (char *) malloc(255); 
+	char *writeBuffer = (char *) malloc(255);
+	int readBytes;
+	char *ptr;
+	
+	socket = newTCPClientSocket4(ip, port);
+	
+	if(socket == -1) {
+		return 1;
+	}
+	
+	sprintf(writeBuffer,"LIST\r\n\r\n");
+	sendLine(socket,writeBuffer);	
+	
+	//LEEMOS LA RESPUESTA AL GET
+	list = (char *) malloc(254);
+	while((readBytes = read(socket,readBuffer,1))>0) {
+		list = (char *) realloc(list,strlen(list)+readBytes+1);
+		strncat(list,readBuffer,readBytes);
+		ptr = list+(strlen(list)-4);
+		if(strcmp(ptr,"\r\n\r\n")==0) {
+			*ptr = '\0';
+			break;
+		}
+	}	
+	
+	printf("%s",list);
+
+	free(list);
+	free(readBuffer);
+	free(writeBuffer);
+	
+	debug(2,"Close connection (%s:%u)",ip,port);
+	closeTCPSocket(socket);
+	
+	return 0;
+}
+
 void start_protocol(const int socket,const char *remoteFilename,const char *localFilename) {
 
 	char writeBuffer[1024];
