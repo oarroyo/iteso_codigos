@@ -24,12 +24,6 @@ int main(int argc, char* argv[]) {
 		fprintf(stderr,"Can't create UDP Socket");
 		return 1;
 	}
-
-	udpSocket2 = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if(udpSocket == -1) {
-		fprintf(stderr,"Can't create UDP Socket");
-		return 1;
-	}	
 	
     udpServer.sin_family = AF_INET;
     inet_pton(AF_INET,"0.0.0.0",&udpServer.sin_addr.s_addr);
@@ -51,9 +45,6 @@ int main(int argc, char* argv[]) {
 		
 		printf("Recibimos: [%s:%i] %s\n",ip,clientPort,buffer);
 
-		udpClient.sin_port = 5000;
-
-		status = sendto(udpSocket2,"I'm here",8,0,(struct sockaddr*)&udpClient, &addrlen);
    	    fflush(stdout);
 	}
 	
