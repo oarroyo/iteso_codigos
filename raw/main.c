@@ -3,6 +3,7 @@
 #include <sys/types.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/ip_icmp.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +38,13 @@ struct icmp_hd {
 	u_int8_t type;
 	u_int8_t code;
 	u_int16_t checksum;
-	u_int32_t rest; 
+	union rest {
+		u_int32_t rest; 
+		struct echoreq {
+			u_int16_t seq;
+			u_int16_t id;
+		} echo;
+	} un;
 };
 
 unsigned short csum(unsigned short *buf, int nwords);
@@ -60,7 +67,7 @@ int main(int argc, char *argv[]) {
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
 	//addr.sin_port = htons(1);
-	addr.sin_addr.s_addr = inet_addr("127.0.0.1");	
+	addr.sin_addr.s_addr = inet_addr("192.168.56.1");	
 
    //Creamos el Paquete a Enviar
 	buffer = (unsigned char *) malloc(4096);
@@ -78,20 +85,21 @@ int main(int argc, char *argv[]) {
 	ip-> ttl = 10;
 	ip->protocol = IPPROTO_ICMP;
 	ip->check = 0;
-	ip->saddr.s_addr = inet_addr("127.0.0.1");
-	ip->daddr.s_addr = inet_addr("127.0.0.1");
+	ip->saddr.s_addr = inet_addr("200.1.1.1");
+	ip->daddr.s_addr = inet_addr("192.168.56.1");
 	 
 	icmp = (struct icmp_hd *) (buffer + sizeof(struct ip_hd));
 	
 	icmp->type = 8;
 	icmp->code = 0;
 	icmp->checksum = 0;
-	icmp->rest = 0;
+	icmp->un.echo.seq = 1;
+	icmp->un.echo.id = htons(1);
 	
 	memset(buffer+sizeof(struct ip_hd)+sizeof(struct icmp_hd),'A',64);
 	
-	//ip->check = csum((unsigned short *)buffer,ip->ihl);
-	//icmp->checksum = csum((unsigned short *)icmp,sizeof(struct icmp_hd)+64);
+	ip->check = csum((unsigned short *)buffer,ip->ihl*4);
+	icmp->checksum = csum((unsigned short *)icmp,sizeof(struct icmp_hd)+64);
 	
 	printf("Paquete a enviar\n");
 	dump(buffer,length);
@@ -121,14 +129,29 @@ int main(int argc, char *argv[]) {
 	
 }
 
-unsigned short csum(unsigned short *buf, int nwords) {
+unsigned short csum(unsigned short *buf, int bytes) {
 	unsigned long sum;
-	for(sum = 0; nwords > 0; nwords --) {
+	u_short oddbyte;
+	u_short answer;
+	
+	sum = 0;
+	while(bytes > 1) {
 		sum += *buf++;
+		bytes -= 2;
 	}
+	
+	if(bytes == 1) {
+		oddbyte = 0;
+		*((unsigned char *) &oddbyte) = *(unsigned char *) buf;
+		sum += oddbyte;
+	}
+	
+	
 	sum = ( sum >> 16) + (sum & 0xffff);
 	sum += (sum >> 16);
-	return sum;
+	
+	answer = ~sum;
+	return answer;
 }
 
 void dump(const unsigned char *data_buffer, const unsigned int length) {
