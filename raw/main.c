@@ -63,6 +63,9 @@ int main(int argc, char *argv[]) {
 	
 	unsigned int length;
 	
+	struct sockaddr_in rsp_addr;
+	socklen_t addrlen;
+	
 	//A donde se enviara el paquete 
 	struct sockaddr_in addr;
 	addr.sin_family = AF_INET;
@@ -85,7 +88,7 @@ int main(int argc, char *argv[]) {
 	ip-> ttl = 10;
 	ip->protocol = IPPROTO_ICMP;
 	ip->check = 0;
-	ip->saddr.s_addr = inet_addr("200.1.1.1");
+	ip->saddr.s_addr = inet_addr("192.168.56.101");
 	ip->daddr.s_addr = inet_addr("192.168.56.1");
 	 
 	icmp = (struct icmp_hd *) (buffer + sizeof(struct ip_hd));
@@ -93,8 +96,8 @@ int main(int argc, char *argv[]) {
 	icmp->type = 8;
 	icmp->code = 0;
 	icmp->checksum = 0;
-	icmp->un.echo.seq = 1;
-	icmp->un.echo.id = htons(1);
+	icmp->un.echo.seq = htons(10);
+	icmp->un.echo.id = htons(20);
 	
 	memset(buffer+sizeof(struct ip_hd)+sizeof(struct icmp_hd),'A',64);
 	
@@ -105,7 +108,7 @@ int main(int argc, char *argv[]) {
 	dump(buffer,length);
 	printf("\n");
 	
-	socketfd = socket(AF_INET,SOCK_RAW,IPPROTO_RAW);
+	socketfd = socket(AF_INET,SOCK_RAW,IPPROTO_ICMP);
 	if(socketfd < 0) {
 		localerror = errno;
 		printf("Can't create Socket (%s)\n",strerror(localerror));
@@ -118,7 +121,6 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	printf("Se enviaran %i bytes\n",length);
 	status = sendto(socketfd,buffer,length,0,(struct sockaddr *) &addr,sizeof(addr));
 	if(status < 0) {
 		localerror = errno;
@@ -126,7 +128,17 @@ int main(int argc, char *argv[]) {
 		return -1;		
 	}
 	printf("Se enviaron %i bytes\n",status);
+
+	memset(buffer,0,4096);
+	status = recvfrom(socketfd,buffer,4096,0,(struct sockaddr *) &rsp_addr,&addrlen);
+	printf("Se recivieron %i bytes\n",status);
 	
+	ip = (struct ip_hd *) buffer;
+	icmp = (struct icmp_hd *) buffer+20;
+	
+	printf("Respuesta al ID %u desde %s de %u bytes\n",ntohs(icmp->un.echo.id),inet_ntoa(ip->saddr),status);
+	
+	dump(buffer,status);
 }
 
 unsigned short csum(unsigned short *buf, int bytes) {
